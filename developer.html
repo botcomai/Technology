@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#020817">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="D4G Dev">
+    <title>Developer Hub | Data4Ghana</title>
+    
+    <link rel="manifest" href="dev-manifest.json">
+    <link rel="apple-touch-icon" href="images/icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="images/icons/icon-192x192.png">
+    
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/menu.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/security.js"></script>
+    
+    <style>
+        .dev-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+
+        .dev-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .credential-group {
+            margin-bottom: 24px;
+        }
+
+        .credential-group label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 8px;
+        }
+
+        .key-input-wrapper {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .key-input {
+            flex: 1;
+            background: #f1f5f9;
+            border: 1.5px solid #e2e8f0;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .btn-icon {
+            background: white;
+            border: 1.5px solid #e2e8f0;
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-icon:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: #f8fafc;
+        }
+
+        .doc-section {
+            margin-top: 40px;
+            scroll-margin-top: 100px;
+        }
+
+        /* Sub-nav Menu - 2x2 Grid */
+        .doc-nav {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 32px;
+            padding: 4px;
+            background: transparent;
+            position: sticky;
+            top: 10px;
+            z-index: 50;
+        }
+
+        .doc-nav a {
+            text-align: center;
+            padding: 14px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 800;
+            color: #64748b;
+            text-decoration: none;
+            text-transform: uppercase;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .doc-nav a:hover {
+            color: var(--primary);
+            border-color: var(--quantum-cyan);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+        }
+
+        .doc-nav a.active {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: #f8fafc;
+        }
+        
+        /* Make the 5th item (Balance) span two columns to keep it neat */
+        .doc-nav a:nth-child(5) {
+            grid-column: span 2;
+        }
+
+        .doc-nav a:hover {
+            color: var(--primary);
+            background: #e2e8f0;
+        }
+
+        .doc-nav a.active {
+            background: white;
+            color: var(--primary);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+
+        .endpoint-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 18px;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            overflow: hidden;
+        }
+        
+        .endpoint-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 20px -8px rgba(0,0,0,0.1);
+            border-color: var(--quantum-cyan);
+        }
+
+        .endpoint-card pre {
+            margin-top: auto;
+            max-height: 200px;
+            overflow: auto;
+            border-radius: 10px;
+            background: #0f172a;
+        }
+
+        pre code {
+            font-size: 13px;
+        }
+
+        .method-badge {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: 800;
+            margin-right: 8px;
+            text-transform: uppercase;
+        }
+
+        .GET { background: #dbeafe; color: #1d4ed8; }
+        .POST { background: #dcfce7; color: #15803d; }
+
+        .endpoint-path {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .roll-btn {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .roll-btn:hover {
+            background: #dc2626;
+            color: white;
+            border-color: #dc2626;
+        }
+
+        @media (max-width: 900px) {
+            .hero-content { flex-direction: column; text-align: center; gap: 20px; }
+            .balance-card-glass { max-width: 100% !important; }
+            .identity-badge { position: relative; bottom: 0; left: 0; justify-content: center; margin-top: 10px; }
+        }
+
+        @media (max-width: 768px) {
+            .dev-card { padding: 15px; border-radius: 12px; }
+            .key-input-wrapper { flex-direction: column; align-items: stretch; gap: 8px; }
+            .btn-icon { width: 100%; height: 40px; }
+            
+            /* Stack the 2-column grids */
+            .endpoints-grid, 
+            .doc-nav,
+            [style*="grid-template-columns: 1fr 1fr"] { 
+                grid-template-columns: 1fr !important; 
+            }
+            
+            /* Reset the spanning for 5th item in doc-nav */
+            .doc-nav a:nth-child(5) {
+                grid-column: span 1 !important;
+            }
+
+            .endpoint-card { padding: 16px; }
+            .endpoint-path { font-size: 12px; word-break: break-all; }
+            
+            pre code { 
+                padding: 10px !important; 
+                font-size: 11px !important; 
+                overflow-x: auto; 
+                display: block;
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            .user-welcome h1 { font-size: 22px; }
+            .section-header h3 { font-size: 18px; }
+            .premium-hero { padding: 30px 15px; }
+        }
+    </style>
+</head>
+<body class="animate-in">
+
+    <div id="menu-container"></div>
+    <button class="menu-btn" onclick="openMenu()">☰</button>
+
+    <div class="main-wrapper">
+        <div class="premium-hero">
+            <div class="hero-content">
+                <div class="user-welcome">
+                    <h1>Developer Hub</h1>
+                    <p class="subtitle">Programmatic access for high-volume agents.</p>
+                </div>
+                
+                <div class="balance-card-glass" style="max-width: 280px; padding: 20px; text-align: center;">
+                    <div class="label">API Status</div>
+                    <div style="font-size: 24px; font-weight: 800; color: #10b981; margin: 10px 0;">Operational</div>
+                    <div style="font-size: 11px; opacity: 0.6;">v2.0.0 Unified</div>
+                </div>
+            </div>
+            
+            <div class="identity-badge">
+                <div class="role-pill" id="bannerRole">LOADING...</div>
+                <div class="merchant-code">Code: <span id="dashboardMerchantId">D4G-...</span></div>
+            </div>
+        </div>
+
+        <div class="dev-container">
+            <!-- Credentials Section -->
+            <div class="dev-card" style="padding: 20px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+                    <h3 style="display:flex; align-items:center; gap:8px; margin:0; font-size:16px;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3-3.5 3.5z"/></svg>
+                        API Credentials
+                    </h3>
+                    <button class="roll-btn" onclick="rollKey()" style="padding: 6px 12px; font-size:11px;">Roll Secret Key</button>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px; text-align: left;">
+                    <div class="credential-group" style="margin:0;">
+                        <label style="font-size:10px; margin-bottom:4px;">Merchant ID</label>
+                        <div class="key-input-wrapper">
+                            <input type="text" id="merchantId" class="key-input" readonly value="D4G-B42F4C" style="padding: 8px 12px; font-size:13px; background:#f8fafc;">
+                            <button class="btn-icon" onclick="copyToClipboard('merchantId')" style="width:36px; height:36px;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="credential-group" style="margin:0;">
+                        <label style="font-size:10px; margin-bottom:4px;">Secret Key (X-API-Key)</label>
+                        <div class="key-input-wrapper">
+                            <input type="password" id="secretKey" class="key-input" readonly value="••••••••••••••••••••••••••••••••" style="padding: 8px 12px; font-size:13px; background:#f8fafc;">
+                            <button class="btn-icon" onclick="toggleVisibility('secretKey')" style="width:36px; height:36px;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </button>
+                            <button class="btn-icon" onclick="copyToClipboard('secretKey')" style="width:36px; height:36px;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Documentation Section -->
+            <div class="dev-card">
+                <div class="section-header">
+                    <h3 style="display:flex; align-items:center; gap:10px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                        Developer Documentation
+                    </h3>
+                </div>
+
+                <p style="color:#64748b; font-size:14px; margin-bottom:24px;">
+                    Integrate our unified services using our REST API. All requests must be made over HTTPS.
+                </p>
+
+                <nav class="doc-nav">
+                    <a href="#doc-auth">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        Auth
+                    </a>
+                    <a href="#doc-api">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                        API
+                    </a>
+                    <a href="#doc-afa">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>
+                        AFA
+                    </a>
+                    <a href="#doc-status">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 11.08 11.14 22 4 14.86 7.05 11.81 11.14 15.9 18.95 8.13"/></svg>
+                        Status
+                    </a>
+                    <a href="#doc-balance">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                        Balance
+                    </a>
+                </nav>
+
+                <div class="doc-section" id="doc-auth">
+                    <h4 style="font-size: 15px; font-weight: 700; margin-bottom: 20px;">1. Authentication</h4>
+                    <p style="font-size: 13px; color: #64748b;">Include your secret key in the <code>X-API-Key</code> header for every request.</p>
+<pre><code class="language-bash">curl -X GET "https://data4ghana.com/api/buy-data" \
+  -H "X-API-Key: YOUR_SECRET_KEY"</code></pre>
+                </div>
+
+                <div class="doc-section" id="doc-api">
+                    <h4 style="font-size: 15px; font-weight: 700; margin-bottom: 20px;">2. API Endpoints</h4>
+
+                    <div class="endpoints-grid">
+                        <!-- Data Bundles -->
+                        <div class="endpoint-card">
+                            <div style="display:flex; align-items:center; margin-bottom:12px;">
+                                <span class="method-badge POST" style="padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight:800; background:#dcfce7; color:#15803d;">POST</span>
+                                <span class="endpoint-path">/api/buy-data</span>
+                            </div>
+                            <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">Purchase data for MTN, Telecel, or Ishare.</p>
+<pre><code class="language-json">{
+  "agent_id": "uuid",
+  "phone": "024XXXXXXX",
+  "network": "MTN",
+  "plan_gb": 2,
+  "plan_cost": 10.00
+}</code></pre>
+                        </div>
+
+                        <!-- AFA Registration -->
+                        <div class="endpoint-card">
+                            <div style="display:flex; align-items:center; margin-bottom:12px;">
+                                <span class="method-badge POST" style="padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight:800; background:#dcfce7; color:#15803d;">POST</span>
+                                <span class="endpoint-path">/api/register-afa</span>
+                            </div>
+                            <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">Submit AFA Normal or Premium registrations.</p>
+<pre><code class="language-json">{
+  "agent_id": "uuid",
+  "full_name": "John Doe",
+  "phone": "055XXXXXXX",
+  "ghana_card": "GHA-XXXX-X",
+  "tier": "normal"
+}</code></pre>
+                        </div>
+
+                        <!-- E-Cards -->
+                        <div class="endpoint-card">
+                            <div style="display:flex; align-items:center; margin-bottom:12px;">
+                                <span class="method-badge POST" style="padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight:800; background:#dcfce7; color:#15803d;">POST</span>
+                                <span class="endpoint-path">/api/buy-ecard</span>
+                            </div>
+                            <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">Dispense WASSCE or BECE E-Cards instantly.</p>
+<pre><code class="language-json">{
+  "agent_id": "uuid",
+  "phone": "024XXXXXXX",
+  "product": "ecard_wassce"
+}</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AFA Section -->
+                <div class="doc-section" id="doc-afa">
+                    <h4 style="font-size: 15px; font-weight: 700; margin-bottom: 20px;">3. AFA Registration</h4>
+                    <p style="font-size: 13px; color: #64748b;">Register customers for AFA Normal or Premium tiers.</p>
+<pre><code class="language-json">POST /api/register-afa
+{
+  "agent_id": "uuid",
+  "full_name": "John Doe",
+  "phone": "055XXXXXXX",
+  "ghana_card": "GHA-XXXX-X",
+  "tier": "normal"
+}</code></pre>
+                </div>
+
+                <!-- Status Section -->
+                <div class="doc-section" id="doc-status">
+                    <h4 style="font-size: 15px; font-weight: 700; margin-bottom: 20px;">4. Order Status</h4>
+                    <p style="font-size: 13px; color: #64748b;">Track the fulfillment status of any transaction.</p>
+<pre><code class="language-json">GET /api/status/{orderId}
+// Response: { "status": "processed", "id": "uuid" }</code></pre>
+                </div>
+
+                <!-- Balance Section -->
+                <div class="doc-section" id="doc-balance">
+                    <h4 style="font-size: 15px; font-weight: 700; margin-bottom: 20px;">5. Wallet Balance</h4>
+                    <p style="font-size: 13px; color: #64748b;">Check your current agent credit balance.</p>
+<pre><code class="language-json">GET /api/balance/{agent_id}
+// Response: { "balance": 250.50 }</code></pre>
+                </div>
+
+                <div class="doc-section">
+                    <h4 style="font-size: 15px; font-weight: 700; margin-bottom: 20px;">6. Implementation Examples</h4>
+                    
+                    <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;">Use these production-ready snippets to integrate order tracking into your application. Replace <code>{orderId}</code> with your actual transaction ID.</p>
+
+                    <!-- Tab Switcher (Simulated) -->
+                    <div style="display:flex; gap:10px; margin-bottom:16px;">
+                        <span style="font-size:11px; font-weight:800; color:var(--accent); text-transform:uppercase;">PHP (cURL)</span>
+                    </div>
+
+<pre><code class="language-php">&lt;?php
+$apiKey = "sk_live_your_secret_key";
+$orderId = "7f8a..."; // The ID returned from /buy-data
+
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, "https://data4ghana.com/api/v1/order/status/" . $orderId);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    "X-API-Key: " . $apiKey,
+    "Content-Type: application/json"
+]);
+
+$response = curl_exec($ch);
+curl_close($ch);
+
+$result = json_json_decode($response, true);
+if ($result['status'] === 'success') {
+    echo "Order Status: " . $result['data']['status'];
+}
+?&gt;</code></pre>
+
+                    <div style="display:flex; gap:10px; margin-top:24px; margin-bottom:16px;">
+                        <span style="font-size:11px; font-weight:800; color:var(--accent); text-transform:uppercase;">Node.js (Axios)</span>
+                    </div>
+
+<pre><code class="language-javascript">const axios = require('axios');
+
+const checkStatus = async (orderId) => {
+  try {
+    const response = await axios.get(`https://data4ghana.com/api/v1/order/status/${orderId}`, {
+      headers: {
+        'X-API-Key': 'sk_live_your_secret_key'
+      }
+    });
+
+    console.log('Order Details:', response.data.data);
+  } catch (error) {
+    console.error('Check failed:', error.response?.data || error.message);
+  }
+};
+
+checkStatus('7f8a...');</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/menu.js"></script>
+    <script src="js/developer.js"></script>
+    <script>
+        // Use standardized menu injection
+        injectMenu();
+
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('dev-sw.js')
+                    .then(reg => console.log('Dev Hub SW Registered!', reg.scope))
+                    .catch(err => console.log('Dev Hub SW Registration Failed!', err));
+            });
+        }
+    </script>
+</body>
+</html>
