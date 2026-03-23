@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Directory | Data4Ghana Admin</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/master-dashboard.css">
+    
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script src="js/supabase.js"></script>
+    
+    <meta name="theme-color" content="#020817">
+</head>
+<body>
+    
+    <div id="admin-sidebar-container"></div>
+    
+    <main class="master-main">
+        <header class="top-nav" style="position: relative;">
+            <div style="display:flex; align-items:center; gap:16px; z-index: 2; position: relative;">
+                <button class="admin-menu-btn" onclick="toggleAdminMenu()">☰</button>
+            </div>
+            
+            <div class="page-title-group" style="position: absolute; left: 0; right: 0; text-align: center; pointer-events: none; z-index: 1;">
+                <h1 id="pageTitle" style="pointer-events: auto;">User Directory</h1>
+            </div>
+            
+            <div class="admin-profile" style="z-index: 2; position: relative;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path></svg>
+                <span style="opacity:0.6; font-size:12px; margin-left:8px;">Administrator</span>
+            </div>
+        </header>
+
+        <div id="tab-users" class="tab-content active">
+            <div class="minimal-header" style="text-align: center; margin-bottom:24px;">
+                <p>Manage roles, wallets, and access.</p>
+            </div>
+
+            <!-- Search Bar -->
+            <div style="background:var(--bg-dark); border:1px solid var(--glass-border); border-radius:12px; padding:16px 24px; margin-bottom:24px; display:flex; gap:12px; align-items:center;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-muted); flex-shrink:0;"><circle cx="11" cy="11" r="8"></circle><path d="M21 21l-4.35-4.35"></path></svg>
+                <input type="text" id="userSearchInput" oninput="filterUsersTable()" placeholder="Search by email or name..." style="flex:1; background:transparent; border:none; color:white; outline:none; font-size:14px;">
+                <button onclick="document.getElementById('userSearchInput').value=''; filterUsersTable();" style="background:transparent; border:none; color:var(--text-muted); cursor:pointer; font-size:18px; padding:0 4px;">×</button>
+            </div>
+
+            <div class="table-responsive mt-6" style="max-height:65vh; overflow:auto; border-bottom:1px solid var(--glass-border);">
+                <table class="master-table">
+                    <thead>
+                        <tr>
+                            <th style="position:sticky; top:0; background:var(--bg-dark); z-index:10; white-space:nowrap; width:350px;">Identity & Role</th>
+                            <th style="position:sticky; top:0; background:var(--bg-dark); z-index:10; white-space:nowrap;">Treasury</th>
+                            <th style="position:sticky; top:0; background:var(--bg-dark); z-index:10; white-space:nowrap;">API Status</th>
+                            <th style="position:sticky; top:0; background:var(--bg-dark); z-index:10; white-space:nowrap;">Override</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <!-- Injected by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Wallet Control Modal (shared code needed here or injected) -->
+    <!-- For now, I'll include the modal HTML directly as it was in master-dashboard.html -->
+    <!-- I need to find the wallet control modal in the original file -->
+
+    <script src="js/admin-core.js"></script>
+    <script src="js/admin-menu.js"></script>
+    <script src="js/admin-modals.js"></script>
+    <script src="js/admin-users.js"></script>
+</body>
+</html>
